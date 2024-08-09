@@ -25,8 +25,8 @@ jobs:
           toolchain: ${{ matrix.rust }}
           override: true
 
-      - name: Build and run the echo server
-        run: cd examples/echo-server && make && make install
+      - name: Build, run, and test the echo agent and daemon
+        run: cd examples && make test
 
       - name: Run cargo test
         uses: actions-rs/cargo@v1
