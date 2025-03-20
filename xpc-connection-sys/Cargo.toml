@@ -2,7 +2,7 @@
 authors = ["Dylan Frankland <github@frankland.io>"]
 name = "xpc-connection-sys"
 version = "0.1.1"
-edition = "2018"
+edition = "2024"
 license = "MIT"
 description = "XPC connection bindings for Rust"
 homepage = "https://github.com/dfrankland/xpc-connection-rs"

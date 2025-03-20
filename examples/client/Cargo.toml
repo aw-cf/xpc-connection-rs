@@ -1,6 +1,6 @@
 [package]
 name = "client"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 futures = { version = "0.3" }
