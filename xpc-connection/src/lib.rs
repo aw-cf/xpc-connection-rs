@@ -1,6 +1,5 @@
 #[allow(
     dead_code,
-    unaligned_references,
     non_upper_case_globals,
     non_camel_case_types,
     non_snake_case,
@@ -16,8 +15,8 @@ mod dlsym;
 
 use block::ConcreteBlock;
 use futures::{
-    channel::mpsc::{unbounded as unbounded_channel, UnboundedReceiver, UnboundedSender},
     Stream,
+    channel::mpsc::{UnboundedReceiver, UnboundedSender, unbounded as unbounded_channel},
 };
 use std::{
     ffi::{CStr, CString},
@@ -29,10 +28,10 @@ use std::{
 };
 
 use xpc_connection_sys::{
-    dispatch_queue_t, xpc_connection_cancel, xpc_connection_create_mach_service,
-    xpc_connection_resume, xpc_connection_send_message, xpc_connection_set_event_handler,
-    xpc_connection_t, xpc_object_t, xpc_release, XPC_CONNECTION_MACH_SERVICE_LISTENER,
-    XPC_CONNECTION_MACH_SERVICE_PRIVILEGED,
+    XPC_CONNECTION_MACH_SERVICE_LISTENER, XPC_CONNECTION_MACH_SERVICE_PRIVILEGED, dispatch_queue_t,
+    xpc_connection_cancel, xpc_connection_create_mach_service, xpc_connection_resume,
+    xpc_connection_send_message, xpc_connection_set_event_handler, xpc_connection_t, xpc_object_t,
+    xpc_release,
 };
 
 dlsym! {
@@ -70,6 +69,7 @@ fn cancel_and_wait_for_event_handler(connection: xpc_connection_t) {
 pub struct XpcListener {
     connection: xpc_connection_t,
     receiver: UnboundedReceiver<XpcClient>,
+    #[allow(dead_code)]
     sender: UnboundedSender<XpcClient>,
 }
 
@@ -220,6 +220,7 @@ pub struct XpcClient {
     connection: xpc_connection_t,
     event_handler_is_running: bool,
     receiver: UnboundedReceiver<Message>,
+    #[allow(dead_code)]
     sender: UnboundedSender<Message>,
 }
 
@@ -344,7 +345,7 @@ impl XpcClient {
         // This is a private API, but it's also required in order to
         // authenticate XPC clients without requiring a handshake.
         // See https://developer.apple.com/forums/thread/72881 for more info.
-        extern "C" {
+        unsafe extern "C" {
             fn xpc_connection_get_audit_token(con: xpc_connection_t, token: *mut c_void);
         }
 
@@ -364,7 +365,7 @@ impl XpcClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use futures::{executor::block_on, StreamExt};
+    use futures::{StreamExt, executor::block_on};
     use std::collections::HashMap;
     use xpc_connection_sys::xpc_connection_cancel;
 

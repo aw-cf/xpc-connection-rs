@@ -88,8 +88,8 @@ pub fn xpc_object_to_xpctype(xpc_object: xpc_object_t) -> (XpcType, xpc_object_t
 
 unsafe fn copy_raw_to_vec(ptr: *const u8, length: usize) -> Vec<u8> {
     let mut vec = Vec::with_capacity(length);
-    vec.set_len(length);
-    std::ptr::copy_nonoverlapping(ptr, vec.as_mut_ptr(), length);
+    unsafe { vec.set_len(length) };
+    unsafe { std::ptr::copy_nonoverlapping(ptr, vec.as_mut_ptr(), length) };
     vec
 }
 
@@ -258,7 +258,7 @@ pub fn message_to_xpc_object(message: Message) -> xpc_object_t {
             array
         }
         Message::Data(value) => unsafe {
-            xpc_data_create(value.as_ptr() as *const _, value.len() as u64)
+            xpc_data_create(value.as_ptr() as *const _, value.len() as usize)
         },
         Message::Uint64(value) => unsafe { xpc_uint64_create(value) },
         Message::Uuid(value) => unsafe { xpc_uuid_create(value.as_ptr()) },
