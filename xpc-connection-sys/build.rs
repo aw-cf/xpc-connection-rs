@@ -6,7 +6,6 @@ fn main() {
 
     bindgen::Builder::default()
         .header("wrapper.h")
-        .rustfmt_bindings(true)
         .allowlist_function("dispatch_queue_create")
         .allowlist_function("xpc.*")
         .allowlist_var("xpc.*")
