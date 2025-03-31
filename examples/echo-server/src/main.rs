@@ -41,7 +41,7 @@ async fn main() {
         // important to anchor to a trusted authority that you know doesn't
         // allow for user-defined common names, otherwise it would be trivial
         // to bypass.
-        // Some("anchor apple and certificate leaf[subject.CN] = \"Apple Development: Steven Joruk (Z84S59N9K4)\""),
+        // Some("anchor apple generic and certificate leaf[subject.CN] = \"Apple Development: Steven Joruk (Z84S59N9K4)\""),
         None,
         None,
     );

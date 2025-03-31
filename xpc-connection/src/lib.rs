@@ -35,7 +35,7 @@ use xpc_connection_sys::{
 };
 
 dlsym! {
-    fn xpc_connection_set_peer_code_sig(*const c_char) -> c_int
+    fn xpc_connection_set_peer_code_signing_requirement(xpc_connection_t, *const c_char) -> c_int
 }
 
 // A connection's event handler could still be waiting or running when we want
@@ -108,10 +108,10 @@ impl XpcListener {
         let mut already_validated = false;
 
         if let Some(requirement) = requirement {
-            if let Some(f) = crate::xpc_connection_set_peer_code_sig.get() {
+            if let Some(f) = crate::xpc_connection_set_peer_code_signing_requirement.get() {
                 let requirement = CString::new(requirement).expect("Invalid requirement string");
                 unsafe {
-                    f(requirement.as_ptr());
+                    f(connection, requirement.as_ptr());
                 }
 
                 already_validated = true;
@@ -265,7 +265,7 @@ impl Stream for XpcClient {
 impl XpcClient {
     /// This sets up a client connection's event handler so that its `Stream`
     /// implementation can be used.
-    fn from_raw(connection: xpc_connection_t) -> Self {
+    fn from_raw(connection: xpc_connection_t, requirement: Option<&'static str>) -> Self {
         let (sender, receiver) = unbounded_channel();
         let sender_clone = sender.clone();
 
@@ -280,6 +280,12 @@ impl XpcClient {
         // explained in the blocks crate.
         let block = block.copy();
 
+        if let Some(requirement) = requirement {
+            if let Some(f) = crate::xpc_connection_set_peer_code_signing_requirement.get() {
+                let requirement = CString::new(requirement).expect("Invalid requirement string");
+                unsafe { f(connection, requirement.as_ptr()) };
+            }
+        }
         unsafe {
             xpc_connection_set_event_handler(connection, block.deref() as *const _ as *mut _);
             xpc_connection_resume(connection);
@@ -301,30 +307,38 @@ impl XpcClient {
         note = "Use connect_privileged or connect_unprivileged"
     )]
     pub fn connect(name: impl AsRef<CStr>) -> Self {
-        Self::connect_privileged(name)
+        Self::connect_privileged(name, None)
     }
 
     /// The connection isn't established until the first call to `send_message`.
     ///
     /// Connects to a privileged mach port, i.e. a launch daemon.
-    pub fn connect_privileged(name: impl AsRef<CStr>) -> Self {
-        Self::connect_with_flags(name, XPC_CONNECTION_MACH_SERVICE_PRIVILEGED as u64)
+    pub fn connect_privileged(name: impl AsRef<CStr>, requirement: Option<&'static str>) -> Self {
+        Self::connect_with_flags(
+            name,
+            XPC_CONNECTION_MACH_SERVICE_PRIVILEGED as u64,
+            requirement,
+        )
     }
 
     /// The connection isn't established until the first call to `send_message`.
     ///
     /// Connects to an unprivileged mach port, i.e. a launch agent.
-    pub fn connect_unprivileged(name: impl AsRef<CStr>) -> Self {
-        Self::connect_with_flags(name, 0)
+    pub fn connect_unprivileged(name: impl AsRef<CStr>, requirement: Option<&'static str>) -> Self {
+        Self::connect_with_flags(name, 0, requirement)
     }
 
     /// The connection isn't established until the first call to `send_message`.
-    fn connect_with_flags(name: impl AsRef<CStr>, flags: u64) -> Self {
+    fn connect_with_flags(
+        name: impl AsRef<CStr>,
+        flags: u64,
+        requirement: Option<&'static str>,
+    ) -> Self {
         let name = name.as_ref();
         let connection = unsafe {
             xpc_connection_create_mach_service(name.as_ptr(), std::ptr::null_mut(), flags)
         };
-        Self::from_raw(connection)
+        Self::from_raw(connection, requirement)
     }
 
     /// The connection is established on the first call to `send_message`. You
@@ -373,7 +387,7 @@ mod tests {
     // double free is possible if the block isn't copied on to the heap.
     #[test]
     fn event_handler_receives_error_on_close() {
-        let mut client = XpcClient::connect_privileged(c"com.apple.blued");
+        let mut client = XpcClient::connect_privileged(c"com.apple.blued", None);
 
         // Cancelling the connection will cause the event handler to be called
         // with an error message. This will happen under normal circumstances,
@@ -387,7 +401,7 @@ mod tests {
 
     #[test]
     fn stream_closed_on_drop() {
-        let mut client = XpcClient::connect_privileged(c"com.apple.blued");
+        let mut client = XpcClient::connect_privileged(c"com.apple.blued", None);
 
         let message = Message::Dictionary({
             let mut dictionary = HashMap::new();

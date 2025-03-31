@@ -11,10 +11,14 @@ async fn main() {
 async fn send_with_reply(mach_port_name: &CStr, privileged: bool) {
     println!("Attempting to connect to {mach_port_name:?}");
 
+    // An example requirement. Matching the team identifier and an apple issued trust anchor.
+    // Some("anchor apple generic and certificate leaf[subject.OU] = \"TEAM_ID\"")
+    let requirement = None;
+
     let mut client = if privileged {
-        XpcClient::connect_privileged(mach_port_name)
+        XpcClient::connect_privileged(mach_port_name, requirement)
     } else {
-        XpcClient::connect_unprivileged(mach_port_name)
+        XpcClient::connect_unprivileged(mach_port_name, requirement)
     };
 
     let mut dictionary = HashMap::new();

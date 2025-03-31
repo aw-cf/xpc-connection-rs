@@ -1,4 +1,4 @@
-use futures::{executor::block_on, StreamExt};
+use futures::{StreamExt, executor::block_on};
 use std::{
     collections::HashMap,
     error::Error,
@@ -11,7 +11,7 @@ use xpc_connection::{Message, XpcClient};
 #[test]
 #[ignore = "This test requires the echo server to be running"]
 fn send_and_receive_int64() {
-    let mut con = XpcClient::connect_privileged(c"echo-daemon");
+    let mut con = XpcClient::connect_privileged(c"echo-daemon", None);
 
     let mut output = HashMap::new();
     let key = c"K".to_owned();
@@ -34,7 +34,7 @@ fn send_and_receive_int64() {
 #[tokio::test]
 #[ignore = "This test requires the echo server to be running"]
 async fn send_and_receive_string() {
-    let mut con = XpcClient::connect_privileged(c"echo-daemon");
+    let mut con = XpcClient::connect_privileged(c"echo-daemon", None);
 
     let mut output = HashMap::new();
     let key = c"K".to_owned();
@@ -60,7 +60,7 @@ async fn send_and_receive_string() {
 #[test]
 #[ignore = "This test requires the echo server to be running"]
 fn send_and_receive_dictionary() {
-    let mut con = XpcClient::connect_privileged(c"echo-daemon");
+    let mut con = XpcClient::connect_privileged(c"echo-daemon", None);
 
     let mut output = HashMap::new();
     let outer_key = c"O".to_owned();
@@ -96,7 +96,7 @@ fn send_and_receive_dictionary() {
 #[test]
 #[ignore = "This test requires the echo server to be running"]
 fn send_and_receive_array() {
-    let mut con = XpcClient::connect_privileged(c"echo-daemon");
+    let mut con = XpcClient::connect_privileged(c"echo-daemon", None);
 
     let mut output = HashMap::new();
     let key = c"K".to_owned();
@@ -124,7 +124,7 @@ fn send_and_receive_array() {
 #[test]
 #[ignore = "This test requires the echo server to be running"]
 fn send_and_receive_data() {
-    let mut con = XpcClient::connect_privileged(c"echo-daemon");
+    let mut con = XpcClient::connect_privileged(c"echo-daemon", None);
 
     let key = c"K".to_owned();
     let value = vec![0, 1];
@@ -150,7 +150,7 @@ fn send_and_receive_data() {
 #[test]
 #[ignore = "This test requires the echo server to be running"]
 fn send_and_receive_uint64() {
-    let mut con = XpcClient::connect_privileged(c"echo-daemon");
+    let mut con = XpcClient::connect_privileged(c"echo-daemon", None);
 
     let key = c"K".to_owned();
     let value = 0x2d13772f7f30cc5d_u64;
@@ -177,7 +177,7 @@ fn send_and_receive_uint64() {
 #[test]
 #[ignore = "This test requires the echo server to be running"]
 fn send_and_receive_uuid() {
-    let mut con = XpcClient::connect_privileged(c"echo-daemon");
+    let mut con = XpcClient::connect_privileged(c"echo-daemon", None);
 
     let key = c"K".to_owned();
     let value = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
@@ -204,7 +204,7 @@ fn send_and_receive_uuid() {
 #[test]
 #[ignore = "This test requires the echo server to be running"]
 fn send_and_receive_fd() -> Result<(), Box<dyn Error>> {
-    let mut con = XpcClient::connect_privileged(c"echo-daemon");
+    let mut con = XpcClient::connect_privileged(c"echo-daemon", None);
 
     let key = c"K".to_owned();
     let original = File::create("/tmp/a")?;
@@ -233,7 +233,7 @@ fn send_and_receive_fd() -> Result<(), Box<dyn Error>> {
 #[test]
 #[ignore = "This test requires the echo server to be running"]
 fn send_and_receive_double() {
-    let mut con = XpcClient::connect_privileged(c"echo-daemon");
+    let mut con = XpcClient::connect_privileged(c"echo-daemon", None);
 
     let key = c"K".to_owned();
     let value = 1.23456789_f64;
@@ -260,7 +260,7 @@ fn send_and_receive_double() {
 #[test]
 #[ignore = "This test requires the echo server to be running"]
 fn send_and_receive_bool() {
-    let mut con = XpcClient::connect_privileged(c"echo-daemon");
+    let mut con = XpcClient::connect_privileged(c"echo-daemon", None);
 
     let key = c"K".to_owned();
     let value = true;
@@ -287,7 +287,7 @@ fn send_and_receive_bool() {
 #[test]
 #[ignore = "This test requires the echo server to be running"]
 fn send_and_receive_date() {
-    let mut con = XpcClient::connect_privileged(c"echo-daemon");
+    let mut con = XpcClient::connect_privileged(c"echo-daemon", None);
 
     let key = c"K".to_owned();
     let value = SystemTime::now();
@@ -314,7 +314,7 @@ fn send_and_receive_date() {
 #[test]
 #[ignore = "This test requires the echo server to be running"]
 fn send_and_receive_negative_date() {
-    let mut con = XpcClient::connect_privileged(c"echo-daemon");
+    let mut con = XpcClient::connect_privileged(c"echo-daemon", None);
 
     let key = c"K".to_owned();
     let value = SystemTime::UNIX_EPOCH - Duration::from_secs(90);
@@ -341,7 +341,7 @@ fn send_and_receive_negative_date() {
 #[test]
 #[ignore = "This test requires the echo server to be running"]
 fn send_and_receive_null() {
-    let mut con = XpcClient::connect_privileged(c"echo-daemon");
+    let mut con = XpcClient::connect_privileged(c"echo-daemon", None);
 
     let key = c"K".to_owned();
 
@@ -366,7 +366,7 @@ fn send_and_receive_null() {
 #[test]
 #[ignore = "This test requires the echo server to be running"]
 fn connect_and_disconnect() {
-    let mut con = XpcClient::connect_privileged(c"echo-daemon");
+    let mut con = XpcClient::connect_privileged(c"echo-daemon", None);
 
     let key = c"K".to_owned();
     let value = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
