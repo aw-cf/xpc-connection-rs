@@ -127,7 +127,7 @@ pub fn xpc_object_to_message(xpc_object: xpc_object_t) -> Message {
         XpcType::Connection => {
             let connection = xpc_object as xpc_connection_t;
             unsafe { xpc_retain(connection as xpc_object_t) };
-            let xpc_connection = XpcClient::from_raw(connection);
+            let xpc_connection = XpcClient::from_raw(connection, None);
             Message::Client(xpc_connection)
         }
         XpcType::Date => {
